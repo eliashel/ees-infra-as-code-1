@@ -43,7 +43,7 @@ Resources:
       InstanceTenancy: default
       Tags:
       - Key: Name
-        Value: !Join [ '', [ !FindInMap [ Define, Global, Prefix ], '-', !FindInMap [ Define, Global, AppId ], '-', ${EnvironmentType}, '-vpc' ] ]
+        Value: !Join [ '', [ !FindInMap [ Define, Global, Prefix ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-vpc' ] ]
 Outputs:
   StackName:
     Description: 'Stack name.'
