@@ -13,22 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'VPC: public and private subnets in two availability zones, for environment'
+Description: 'Enable environment for app1'
 Mappings:
   Define:
     Global:
       Prefix: ees
       AppId: app1
+    VPC:
+      CidrBlock: '10.1.0.0/16'
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
     - Label:
         default: 'Environment Parameters'
       Parameters:
-      - Environment
+      - EnvironmentType
 Parameters:
   EnvironmentType:
-    Description: 'Environment type'
+    Description: 'Environment type to deploy'
     Type: String
     AllowedValues: [dev, test, prod]
     Default: dev
@@ -37,13 +39,28 @@ Resources:
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
-      CidrBlock: '10.1.0.0/16'
+      CidrBlock: !FindInMap [ Define, VPC, CidrBlock ]
       EnableDnsSupport: true
       EnableDnsHostnames: true
       InstanceTenancy: default
       Tags:
       - Key: Name
         Value: !Join [ '', [ !FindInMap [ Define, Global, Prefix ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-vpc' ] ]
+      - Key: Application
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: Environment
+        Value: !Ref EnvironmentType
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !FindInMap [ Define, Global, Prefix ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-internet-gateway' ] ]
+  VPCGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
 Outputs:
   StackName:
     Description: 'Stack name.'
