@@ -17,8 +17,10 @@ Description: 'Enable environment for app1'
 Mappings:
   Define:
     Global:
-      Prefix: ees
+      CompanyId: ees
       AppId: app1
+      ProjectId: first-web-static
+      CompanyName: eliashel
     VPC:
       CidrBlock: '10.1.0.0/16'
 Metadata:
@@ -27,10 +29,17 @@ Metadata:
     - Label:
         default: 'Environment Parameters'
       Parameters:
+      - EnvironmentId
       - EnvironmentType
 Parameters:
+  EnvironmentId:
+    Description: 'Ensure you set unique ID for environment. You can identify all resources from the environment through this ID.'
+    Type:  Number
+    MinValue: 1
+    MaxValue: 999
+    ConstraintDescription: 'EnvironmentId must be numeric between [1-999].'
   EnvironmentType:
-    Description: 'Environment type to deploy'
+    Description: 'What type of the environment do you want to deploy? Select one...'
     Type: String
     AllowedValues: [dev, test, prod]
     Default: dev
@@ -45,17 +54,37 @@ Resources:
       InstanceTenancy: default
       Tags:
       - Key: Name
-        Value: !Join [ '', [ !FindInMap [ Define, Global, Prefix ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-vpc' ] ]
+        Value: !Join [ '', [ !FindInMap [ Define, Global, CompanyId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-vpc' ] ]
       - Key: Application
         Value: !FindInMap [ Define, Global, AppId ]
-      - Key: Environment
+      - Key: ProjectId
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: CompanyId
+        Value: !FindInMap [ Define, Global, CompanyId ]
+      - Key: CompanyName
+        Value: !FindInMap [ Define, Global, CompanyName ]
+      - Key: EnvironmentId
+        Value: !Ref EnvironmentId
+      - Key: EnvironmentType
         Value: !Ref EnvironmentType
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
       Tags:
       - Key: Name
-        Value: !Join [ '', [ !FindInMap [ Define, Global, Prefix ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-internet-gateway' ] ]
+        Value: !Join [ '', [ !FindInMap [ Define, Global, CompanyId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-vpc' ] ]
+      - Key: Application
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: ProjectId
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: CompanyId
+        Value: !FindInMap [ Define, Global, CompanyId ]
+      - Key: CompanyName
+        Value: !FindInMap [ Define, Global, CompanyName ]
+      - Key: EnvironmentId
+        Value: !Ref EnvironmentId
+      - Key: EnvironmentType
+        Value: !Ref EnvironmentType
   VPCGatewayAttachment:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
