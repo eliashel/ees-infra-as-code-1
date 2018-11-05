@@ -19,6 +19,8 @@ Mappings:
     Global:
       Prefix: ees
       AppId: app1
+      ProjectId: first-web-static
+      Company: eliashel
     VPC:
       CidrBlock: '10.1.0.0/16'
 Metadata:
@@ -27,10 +29,17 @@ Metadata:
     - Label:
         default: 'Environment Parameters'
       Parameters:
+      - EnvironmentId
       - EnvironmentType
 Parameters:
+  EnvironmentId:
+    Description: 'Ensure you set unique ID for environment. You can identify all resources from the environment through this ID.'
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: dev
+    ConstraintDescription: 'Must specify: dev, test or prod'
   EnvironmentType:
-    Description: 'Environment type to deploy'
+    Description: 'What type of the environment do you want to deploy? Select one...'
     Type: String
     AllowedValues: [dev, test, prod]
     Default: dev
@@ -48,6 +57,10 @@ Resources:
         Value: !Join [ '', [ !FindInMap [ Define, Global, Prefix ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-vpc' ] ]
       - Key: Application
         Value: !FindInMap [ Define, Global, AppId ]
+      - Key: Application
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: Application
+        Value: !FindInMap [ Define, Global, Company ]
       - Key: Environment
         Value: !Ref EnvironmentType
   InternetGateway:
@@ -56,6 +69,14 @@ Resources:
       Tags:
       - Key: Name
         Value: !Join [ '', [ !FindInMap [ Define, Global, Prefix ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-internet-gateway' ] ]
+      - Key: Application
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: Application
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: Application
+        Value: !FindInMap [ Define, Global, Company ]
+      - Key: Environment
+        Value: !Ref EnvironmentType
   VPCGatewayAttachment:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
