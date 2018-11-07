@@ -19,8 +19,10 @@ Mappings:
     Global:
       CompanyId: ees
       AppId: app1
+      AppVersion: 0.0.1
       ProjectId: first-web-static
       CompanyName: eliashel
+      CFTemplateVersion: 0.0.1
     VPC:
       CidrBlock: '10.1.0.0/16'
 Metadata:
@@ -55,14 +57,18 @@ Resources:
       Tags:
       - Key: Name
         Value: !Join [ '', [ !FindInMap [ Define, Global, CompanyId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-vpc' ] ]
-      - Key: Application
+      - Key: AppId
         Value: !FindInMap [ Define, Global, AppId ]
+      - Key: AppVersion
+        Value: !FindInMap [ Define, Global, AppVersion ]
       - Key: ProjectId
         Value: !FindInMap [ Define, Global, ProjectId ]
       - Key: CompanyId
         Value: !FindInMap [ Define, Global, CompanyId ]
       - Key: CompanyName
         Value: !FindInMap [ Define, Global, CompanyName ]
+      - Key: CFTemplateVersion
+        Value: !FindInMap [ Define, Global, CFTemplateVersion ]
       - Key: EnvironmentId
         Value: !Ref EnvironmentId
       - Key: EnvironmentType
@@ -73,14 +79,18 @@ Resources:
       Tags:
       - Key: Name
         Value: !Join [ '', [ !FindInMap [ Define, Global, CompanyId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-vpc' ] ]
-      - Key: Application
+      - Key: AppId
         Value: !FindInMap [ Define, Global, AppId ]
+      - Key: AppVersion
+        Value: !FindInMap [ Define, Global, AppVersion ]
       - Key: ProjectId
         Value: !FindInMap [ Define, Global, ProjectId ]
       - Key: CompanyId
         Value: !FindInMap [ Define, Global, CompanyId ]
       - Key: CompanyName
         Value: !FindInMap [ Define, Global, CompanyName ]
+      - Key: CFTemplateVersion
+        Value: !FindInMap [ Define, Global, CFTemplateVersion ]
       - Key: EnvironmentId
         Value: !Ref EnvironmentId
       - Key: EnvironmentType
