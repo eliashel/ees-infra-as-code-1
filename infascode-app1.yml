@@ -233,6 +233,206 @@ Resources:
         Value: !Ref EnvironmentId
       - Key: EnvironmentType
         Value: !Ref EnvironmentType
+  RouteTableADMZ:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !FindInMap [ Define, Global, OrganizationId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-routetable-dmz-a' ] ]
+      - Key: AppId
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: AppVersion
+        Value: !FindInMap [ Define, Global, AppVersion ]
+      - Key: ProjectId
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: OrganizationId
+        Value: !FindInMap [ Define, Global, OrganizationId ]
+      - Key: OrganizationName
+        Value: !FindInMap [ Define, Global, OrganizationName ]
+      - Key: CFTemplateVersion
+        Value: !FindInMap [ Define, Global, CFTemplateVersion ]
+      - Key: EnvironmentId
+        Value: !Ref EnvironmentId
+      - Key: EnvironmentType
+        Value: !Ref EnvironmentType
+  RouteTableAWEB:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !FindInMap [ Define, Global, OrganizationId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-routetable-web-a' ] ]
+      - Key: AppId
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: AppVersion
+        Value: !FindInMap [ Define, Global, AppVersion ]
+      - Key: ProjectId
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: OrganizationId
+        Value: !FindInMap [ Define, Global, OrganizationId ]
+      - Key: OrganizationName
+        Value: !FindInMap [ Define, Global, OrganizationName ]
+      - Key: CFTemplateVersion
+        Value: !FindInMap [ Define, Global, CFTemplateVersion ]
+      - Key: EnvironmentId
+        Value: !Ref EnvironmentId
+      - Key: EnvironmentType
+        Value: !Ref EnvironmentType
+  RouteTableBDMZ:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !FindInMap [ Define, Global, OrganizationId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-routetable-dmz-b' ] ]
+      - Key: AppId
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: AppVersion
+        Value: !FindInMap [ Define, Global, AppVersion ]
+      - Key: ProjectId
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: OrganizationId
+        Value: !FindInMap [ Define, Global, OrganizationId ]
+      - Key: OrganizationName
+        Value: !FindInMap [ Define, Global, OrganizationName ]
+      - Key: CFTemplateVersion
+        Value: !FindInMap [ Define, Global, CFTemplateVersion ]
+      - Key: EnvironmentId
+        Value: !Ref EnvironmentId
+      - Key: EnvironmentType
+        Value: !Ref EnvironmentType
+  RouteTableBWEB:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !FindInMap [ Define, Global, OrganizationId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-routetable-web-b' ] ]
+      - Key: AppId
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: AppVersion
+        Value: !FindInMap [ Define, Global, AppVersion ]
+      - Key: ProjectId
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: OrganizationId
+        Value: !FindInMap [ Define, Global, OrganizationId ]
+      - Key: OrganizationName
+        Value: !FindInMap [ Define, Global, OrganizationName ]
+      - Key: CFTemplateVersion
+        Value: !FindInMap [ Define, Global, CFTemplateVersion ]
+      - Key: EnvironmentId
+        Value: !Ref EnvironmentId
+      - Key: EnvironmentType
+        Value: !Ref EnvironmentType
+  RouteTableAssociationADMZ:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SubnetADMZ
+      RouteTableId: !Ref RouteTableADMZ
+  RouteTableAssociationAWEB:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SubnetAWEB
+      RouteTableId: !Ref RouteTableAWEB
+  RouteTableAssociationBDMZ:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SubnetBDMZ
+      RouteTableId: !Ref RouteTableBDMZ
+  RouteTableAssociationBWEB:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SubnetBWEB
+      RouteTableId: !Ref RouteTableBWEB
+  # Route DMZ to Internet
+  RouteTableADMZInternetRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref RouteTableADMZ
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+  RouteTableBDMZInternetRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref RouteTableBDMZ
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+  # Elastic IP for NatGateways
+  NatGatewayAEIP:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+  NatGatewayBEIP:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+  # Nats Gateway for access to internet from private subnets
+  NatGatewayA:
+    DependsOn: VPCGatewayAttachment
+    Type: 'AWS::EC2::NatGateway'
+    Properties:
+      AllocationId: !GetAtt 'NatGatewayAEIP.AllocationId'
+      SubnetId: !Ref SubnetADMZ
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !FindInMap [ Define, Global, OrganizationId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-natgateway-a' ] ]
+      - Key: AppId
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: AppVersion
+        Value: !FindInMap [ Define, Global, AppVersion ]
+      - Key: ProjectId
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: OrganizationId
+        Value: !FindInMap [ Define, Global, OrganizationId ]
+      - Key: OrganizationName
+        Value: !FindInMap [ Define, Global, OrganizationName ]
+      - Key: CFTemplateVersion
+        Value: !FindInMap [ Define, Global, CFTemplateVersion ]
+      - Key: EnvironmentId
+        Value: !Ref EnvironmentId
+      - Key: EnvironmentType
+        Value: !Ref EnvironmentType
+  NatGatewayB:
+    DependsOn: VPCGatewayAttachment
+    Type: 'AWS::EC2::NatGateway'
+    Properties:
+      AllocationId: !GetAtt 'NatGatewayBEIP.AllocationId'
+      SubnetId: !Ref SubnetBDMZ
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !FindInMap [ Define, Global, OrganizationId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-natgateway-b' ] ]
+      - Key: AppId
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: AppVersion
+        Value: !FindInMap [ Define, Global, AppVersion ]
+      - Key: ProjectId
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: OrganizationId
+        Value: !FindInMap [ Define, Global, OrganizationId ]
+      - Key: OrganizationName
+        Value: !FindInMap [ Define, Global, OrganizationName ]
+      - Key: CFTemplateVersion
+        Value: !FindInMap [ Define, Global, CFTemplateVersion ]
+      - Key: EnvironmentId
+        Value: !Ref EnvironmentId
+      - Key: EnvironmentType
+        Value: !Ref EnvironmentType
+  # Route to Internet from private networks.
+  RouteAWEBInternet:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTableAWEB
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayA
+  RouteBWEBInternet:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTableBWEB
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayB
 Outputs:
   StackName:
     Description: 'Stack name.'
