@@ -16,15 +16,44 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Enable environment for app1'
 Mappings:
   Define:
+    # Define all global variables or constants for the environment. 
+    # The most of those variables or constants will by tagged on the resources.
     Global:
-      CompanyId: ees
+      # Organization Id is a identifier for Organization en AWS. 
+      # It us unique and abbrevation for name of organization.
+      OrganizationId: ees
+      # ID for application.
       AppId: app1
+      # Version for application  
       AppVersion: 0.0.1
+      # Project ID for this environment
       ProjectId: first-web-static
-      CompanyName: eliashel
-      CFTemplateVersion: 0.0.1
+      # Name of the proprietary organization of all resources that will be created with this template.
+      # OrganizationName should be mapped on AWS Organizations.
+      OrganizationName: eliashel
+      # Version of this template
+      CFTemplateVersion: 0.0.2
     VPC:
       CidrBlock: '10.1.0.0/16'
+      Subnet:
+        # Principal Availability Zone (A)
+        # 0000 0000 : 0 
+        SubnetADMZCidrBlock: '10.1.0.0/20'
+        # 0001 0000 : 16 
+        SubnetAWEBCidrBlock: '10.1.16.0/20'
+        # 0010 0000 : 32 
+        #SubnetAAPPCidrBlock: '10.1.32.0/20'
+        # 0011 0000 : 48 
+        #SubnetADBCidrBlock:  '10.1.48.0/20'
+        # Secundary Availability Zone (B)
+        # 0100 0000 : 64 
+        SubnetBDMZCidrBlock: '10.1.64.0/20'
+        # 0101 0000 : 80 
+        SubnetBWEBCidrBlock: '10.1.80.0/20'
+        # 0110 0000 : 96 
+        #SubnetBAPPCidrBlock: '10.1.96.0/20'
+        # 0111 0000 : 112 
+        #SubnetBDBCidrBlock:  '10.1.112.0/20'
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -56,17 +85,17 @@ Resources:
       InstanceTenancy: default
       Tags:
       - Key: Name
-        Value: !Join [ '', [ !FindInMap [ Define, Global, CompanyId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-vpc' ] ]
+        Value: !Join [ '', [ !FindInMap [ Define, Global, OrganizationId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-vpc' ] ]
       - Key: AppId
         Value: !FindInMap [ Define, Global, AppId ]
       - Key: AppVersion
         Value: !FindInMap [ Define, Global, AppVersion ]
       - Key: ProjectId
         Value: !FindInMap [ Define, Global, ProjectId ]
-      - Key: CompanyId
-        Value: !FindInMap [ Define, Global, CompanyId ]
-      - Key: CompanyName
-        Value: !FindInMap [ Define, Global, CompanyName ]
+      - Key: OrganizationId
+        Value: !FindInMap [ Define, Global, OrganizationId ]
+      - Key: OrganizationName
+        Value: !FindInMap [ Define, Global, OrganizationName ]
       - Key: CFTemplateVersion
         Value: !FindInMap [ Define, Global, CFTemplateVersion ]
       - Key: EnvironmentId
@@ -78,17 +107,17 @@ Resources:
     Properties:
       Tags:
       - Key: Name
-        Value: !Join [ '', [ !FindInMap [ Define, Global, CompanyId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-vpc' ] ]
+        Value: !Join [ '', [ !FindInMap [ Define, Global, OrganizationId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-vpc' ] ]
       - Key: AppId
         Value: !FindInMap [ Define, Global, AppId ]
       - Key: AppVersion
         Value: !FindInMap [ Define, Global, AppVersion ]
       - Key: ProjectId
         Value: !FindInMap [ Define, Global, ProjectId ]
-      - Key: CompanyId
-        Value: !FindInMap [ Define, Global, CompanyId ]
-      - Key: CompanyName
-        Value: !FindInMap [ Define, Global, CompanyName ]
+      - Key: OrganizationId
+        Value: !FindInMap [ Define, Global, OrganizationId ]
+      - Key: OrganizationName
+        Value: !FindInMap [ Define, Global, OrganizationName ]
       - Key: CFTemplateVersion
         Value: !FindInMap [ Define, Global, CFTemplateVersion ]
       - Key: EnvironmentId
@@ -100,6 +129,110 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
+  SubnetADMZ:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: !FindInMap [ Define, VPC, Subnet, SubnetADMZCidrBlock ]
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !FindInMap [ Define, Global, OrganizationId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-subnet-dmz-a' ] ]
+      - Key: AppId
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: AppVersion
+        Value: !FindInMap [ Define, Global, AppVersion ]
+      - Key: ProjectId
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: OrganizationId
+        Value: !FindInMap [ Define, Global, OrganizationId ]
+      - Key: OrganizationName
+        Value: !FindInMap [ Define, Global, OrganizationName ]
+      - Key: CFTemplateVersion
+        Value: !FindInMap [ Define, Global, CFTemplateVersion ]
+      - Key: EnvironmentId
+        Value: !Ref EnvironmentId
+      - Key: EnvironmentType
+        Value: !Ref EnvironmentType
+  SubnetAWEB:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: !FindInMap [ Define, VPC, Subnet, SubnetAWEBCidrBlock ]
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !FindInMap [ Define, Global, OrganizationId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-subnet-web-a' ] ]
+      - Key: AppId
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: AppVersion
+        Value: !FindInMap [ Define, Global, AppVersion ]
+      - Key: ProjectId
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: OrganizationId
+        Value: !FindInMap [ Define, Global, OrganizationId ]
+      - Key: OrganizationName
+        Value: !FindInMap [ Define, Global, OrganizationName ]
+      - Key: CFTemplateVersion
+        Value: !FindInMap [ Define, Global, CFTemplateVersion ]
+      - Key: EnvironmentId
+        Value: !Ref EnvironmentId
+      - Key: EnvironmentType
+        Value: !Ref EnvironmentType
+  SubnetBDMZ:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: !FindInMap [ Define, VPC, Subnet, SubnetBDMZCidrBlock ]
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !FindInMap [ Define, Global, OrganizationId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-subnet-dmz-b' ] ]
+      - Key: AppId
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: AppVersion
+        Value: !FindInMap [ Define, Global, AppVersion ]
+      - Key: ProjectId
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: OrganizationId
+        Value: !FindInMap [ Define, Global, OrganizationId ]
+      - Key: OrganizationName
+        Value: !FindInMap [ Define, Global, OrganizationName ]
+      - Key: CFTemplateVersion
+        Value: !FindInMap [ Define, Global, CFTemplateVersion ]
+      - Key: EnvironmentId
+        Value: !Ref EnvironmentId
+      - Key: EnvironmentType
+        Value: !Ref EnvironmentType
+  SubnetBWEB:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: !FindInMap [ Define, VPC, Subnet, SubnetBWEBCidrBlock ]
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ '', [ !FindInMap [ Define, Global, OrganizationId ], '-', !FindInMap [ Define, Global, AppId ], '-', !Sub '${EnvironmentType}-${EnvironmentId}-subnet-web-b' ] ]
+      - Key: AppId
+        Value: !FindInMap [ Define, Global, AppId ]
+      - Key: AppVersion
+        Value: !FindInMap [ Define, Global, AppVersion ]
+      - Key: ProjectId
+        Value: !FindInMap [ Define, Global, ProjectId ]
+      - Key: OrganizationId
+        Value: !FindInMap [ Define, Global, OrganizationId ]
+      - Key: OrganizationName
+        Value: !FindInMap [ Define, Global, OrganizationName ]
+      - Key: CFTemplateVersion
+        Value: !FindInMap [ Define, Global, CFTemplateVersion ]
+      - Key: EnvironmentId
+        Value: !Ref EnvironmentId
+      - Key: EnvironmentType
+        Value: !Ref EnvironmentType
 Outputs:
   StackName:
     Description: 'Stack name.'
